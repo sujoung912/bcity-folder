@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>B-City 공유폴더 매트릭스</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Malgun Gothic','맑은 고딕',Arial,sans-serif; background:#f4f5f7; font-size:12px; }
+
+.top-bar {
+  background:#1a3460; color:#fff;
+  padding:12px 20px; display:flex; align-items:center; gap:12px;
+  position:sticky; top:0; z-index:300;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.top-bar h1 { font-size:14px; font-weight:700; }
+.top-bar p  { font-size:10px; opacity:.7; margin-top:2px; }
+.top-bar-right { margin-left:auto; display:flex; gap:8px; align-items:center; }
+.btn {
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+  color:#fff; padding:5px 13px; border-radius:5px; cursor:pointer;
+  font-size:11px; font-family:inherit; transition:background .15s;
+  text-decoration:none; display:inline-flex; align-items:center; gap:5px;
+}
+.btn:hover { background:rgba(255,255,255,.25); }
+.btn-drive { background:#1a73e8; border-color:#1a73e8; }
+.btn-drive:hover { background:#1558b0; }
+
+.wrap { overflow:auto; height:calc(100vh - 50px); }
+
+table { border-collapse:collapse; min-width:max-content; }
+
+thead th { position:sticky; top:0; z-index:20; }
+thead tr:first-child th  { top:0;  z-index:21; }
+thead tr:nth-child(2) th { top:30px; z-index:21; }
+thead tr:nth-child(3) th { top:58px; z-index:21; }
+
+th.fix,  td.fix  { position:sticky; left:0;   z-index:15; background:#fff; }
+th.fix2, td.fix2 { position:sticky; left:52px; z-index:15; background:#fff; }
+thead th.fix, thead th.fix2 { z-index:25; background:#1a3460; }
+
+.hdr-l1 {
+  color:#fff; font-weight:700; font-size:11px;
+  text-align:center; padding:5px 6px;
+  border-right:2px solid #fff;
+  border-bottom:1px solid rgba(255,255,255,.3);
+}
+.hdr-l2 {
+  color:#fff; font-weight:600; font-size:10px;
+  text-align:center; padding:4px 4px;
+  border-right:1px solid rgba(255,255,255,.25);
+  border-bottom:1px solid rgba(255,255,255,.3);
+  min-width:90px; max-width:110px; line-height:1.3;
+}
+.hdr-l3 {
+  font-size:9px; font-weight:500;
+  text-align:center; padding:3px 3px;
+  border-right:1px solid #dde; border-bottom:2px solid #aab;
+  color:#333; background:#eef0f5;
+  min-width:64px; max-width:80px; line-height:1.3;
+  white-space:normal; word-break:keep-all;
+}
+.hdr-date  { background:#1a3460; color:#fff; font-size:11px; text-align:center; padding:4px 6px; min-width:52px; border-right:1px solid rgba(255,255,255,.2); font-weight:700; }
+.hdr-event { background:#1a3460; color:#fff; font-size:11px; text-align:center; padding:4px 8px; min-width:148px; border-right:2px solid rgba(255,255,255,.3); font-weight:700; }
+
+tr.data-row { border-bottom:1px solid #e0e3ea; }
+tr.data-row:hover { background:#f0f4ff; }
+tr.data-row.hl-row { background:#fffbe6; }
+tr.data-row.hl-row:hover { background:#fff5cc; }
+
+td.fix  { min-width:52px;  border-right:1px solid #ccc; background:#ffffff; z-index:10; box-shadow:2px 0 4px rgba(0,0,0,.06); }
+td.fix2 { min-width:148px; border-right:2px solid #b0b8cc; background:#ffffff; z-index:10; box-shadow:2px 0 6px rgba(0,0,0,.08); }
+tr.hl-row td.fix, tr.hl-row td.fix2 { background:#fffbe6; }
+
+.cell-date  { text-align:center; font-size:12px; font-weight:800; color:#0d2245; padding:6px 4px; letter-spacing:0.3px; }
+.cell-event { font-size:12px; color:#0d1f3c; padding:6px 10px; font-weight:700; line-height:1.45; }
+
+td.data-cell { text-align:center; padding:3px; border-right:1px solid #e8eaf0; vertical-align:middle; }
+
+.active-block {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:100%; min-height:28px; border-radius:4px;
+  cursor:pointer; transition:filter .15s, transform .1s;
+  font-size:10px; font-weight:700; color:#fff;
+  padding:3px 4px; line-height:1.2; gap:3px;
+}
+.active-block:hover { filter:brightness(1.15); transform:scale(1.04); }
+.empty-cell { display:inline-block; width:100%; min-height:28px; }
+
+.g1{background:#1F497D;} .g2{background:#17375E;} .g3{background:#244061;}
+.g4{background:#403151;} .g5{background:#4F3128;} .g6{background:#3F5128;} .g7{background:#7B3528;}
+.hg1{background:#1F497D;} .hg2{background:#17375E;} .hg3{background:#244061;}
+.hg4{background:#403151;} .hg5{background:#4F3128;} .hg6{background:#3F5128;} .hg7{background:#7B3528;}
+
+/* ── 팝업 ── */
+.overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.45); z-index:500;
+  align-items:center; justify-content:center;
+}
+.overlay.open { display:flex; }
+.popup {
+  background:#fff; border-radius:12px;
+  padding:22px; max-width:460px; width:92%;
+  box-shadow:0 12px 40px rgba(0,0,0,.3);
+  max-height:82vh; display:flex; flex-direction:column;
+}
+.popup-head {
+  border-bottom:2px solid #1a3460; padding-bottom:10px; margin-bottom:14px;
+}
+.popup-date { font-size:11px; color:#1a73e8; font-weight:600; margin-bottom:3px; }
+.popup-event { font-size:14px; font-weight:700; color:#1a3460; }
+.popup-cat { font-size:11px; color:#666; margin-top:3px; }
+.popup-body { overflow-y:auto; flex:1; }
+.popup-item {
+  display:flex; align-items:center; gap:8px;
+  padding:7px 10px; border-radius:6px;
+  margin-bottom:4px; border:1px solid #e8eaf0;
+  text-decoration:none; color:#222;
+  transition:background .12s, border-color .12s;
+  cursor:pointer;
+}
+.popup-item:hover { background:#e8f0fe; border-color:#1a73e8; }
+.popup-item.no-url { opacity:.55; cursor:default; }
+.popup-item.no-url:hover { background:#fff; border-color:#e8eaf0; }
+.item-icon { font-size:16px; flex-shrink:0; }
+.item-label { font-size:12px; font-weight:500; flex:1; line-height:1.3; }
+.item-link-icon { font-size:13px; flex-shrink:0; color:#1a73e8; }
+.item-link-icon.gray { color:#bbb; }
+.no-url-tip { font-size:10px; color:#aaa; margin-top:12px; text-align:center; }
+.popup-foot { margin-top:14px; display:flex; gap:8px; justify-content:flex-end; border-top:1px solid #eee; padding-top:12px; }
+.btn-mid-link {
+  background:#1a73e8; color:#fff; border:none;
+  padding:6px 14px; border-radius:6px; cursor:pointer;
+  font-size:11px; font-family:inherit;
+  display:flex; align-items:center; gap:5px;
+  text-decoration:none;
+}
+.btn-mid-link:hover { background:#1558b0; }
+.btn-close {
+  background:#f1f3f4; color:#444; border:none;
+  padding:6px 14px; border-radius:6px; cursor:pointer;
+  font-size:11px; font-family:inherit;
+}
+.btn-close:hover { background:#e0e0e0; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <h1>🏗️ B-City 공유폴더 매트릭스</h1>
+    <p>주요 일정(세로) × 대·중·소 분류(가로) — 셀 클릭 → Google Drive 폴더 열기</p>
+  </div>
+  <div class="top-bar-right">
+    <a class="btn btn-drive" href="https://drive.google.com" target="_blank">
+      <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" width="14" style="vertical-align:middle"> Google Drive 열기
+    </a>
+  </div>
+</div>
+
+<div class="wrap"><table id="tbl"></table></div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closePopup()">
+  <div class="popup">
+    <div class="popup-head">
+      <div class="popup-date" id="popDate"></div>
+      <div class="popup-event" id="popEvent"></div>
+      <div class="popup-cat" id="popCat"></div>
+    </div>
+    <div class="popup-body" id="popBody"></div>
+    <p class="no-url-tip" id="noUrlTip" style="display:none">
+      ⚙️ Google Drive에서 폴더 만든 뒤 HTML 파일 내 <b>FOLDER_URLS</b> 객체에 URL을 붙여넣으세요
+    </p>
+    <div class="popup-foot">
+      <a class="btn-mid-link" id="midFolderBtn" href="#" target="_blank">
+        📂 중분류 폴더 열기
+      </a>
+      <button class="btn-close" onclick="closePopup()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  ★ Google Drive 폴더 URL 설정
+//  아래 각 항목에 Google Drive 폴더 공유 URL을 붙여넣으세요.
+//  예시: "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQ"
+//
+//  설정 방법:
+//  1. Google Drive에서 폴더 만들기
+//  2. 폴더 우클릭 → '링크 복사'
+//  3. 아래 해당 항목의 "" 안에 붙여넣기
+// ════════════════════════════════════════════════════════════════
+const FOLDER_URLS = {
+  // ── 대분류 폴더 (중분류 없을 때 fallback) ──
+  "사업 총괄 및 기획":    "",
+  "자산 및 자금관리":     "",
+  "건설 및 기술관리":     "",
+  "법무 및 계약관리":     "",
+  "경영지원 및 총무":     "",
+  "홍보 및 마케팅":       "",
+  "보상 및 주민협의":     "",
+
+  // ── 중분류 폴더 ──
+  "사업계획":              "",
+  "일정 및 공정관리":      "",
+  "보고 및 회의":          "",
+  "공문서 및 자료 수발신": "",
+  "공통":                  "",
+  "자금조달":              "",
+  "자금운용":              "",
+  "회계/세무":             "",
+  "부동산 자산관리":       "",
+  "리스크 관리(재무)":     "",
+  "인허가":                "",
+  "설계관리":              "",
+  "공사관리":              "",
+  "공사비 관리":           "",
+  "준공 및 사후처리":      "",
+  "법률자문":              "",
+  "계약관리":              "",
+  "소송 및 분쟁":          "",
+  "내부규정 및 지침":      "",
+  "법인 기본 서류":        "",
+  "이사회/주주총회":       "",
+  "인사/조직":             "",
+  "총무":                  "",
+  "홍보 및 마케팅비 관리": "",
+  "홍보":                  "",
+  "마케팅":                "",
+  "대외협력":              "",
+  "보상 민원 예산 관리":   "",
+  "민원":                  "",
+  "토지보상":              "",
+  "이주대책":              "",
+  "생활대책":              "",
+
+  // ── 소분류 폴더 (개별 설정 원할 경우) ──
+  "사업타당성":                          "",
+  "사업계획서":                          "",
+  "분야별 보고서":                       "",
+  "공정보고":                            "",
+  "마스터 일정표":                       "",
+  "분야별 세부공정표":                   "",
+  "연락망":                              "",
+  "국토교통부 및 국토연구원":            "",
+  "지자체(강원·춘천·홍천) 및 유관기관": "",
+  "기타 공공기관":                       "",
+  "공청회·주민설명회·간담회":            "",
+  "내부회의":                            "",
+  "기타":                                "",
+  "수신공문":                            "",
+  "발신공문":                            "",
+  "수신자료":                            "",
+  "발신자료":                            "",
+  "사내 양식 및 서식":                   "",
+  "협력업체 리스트":                     "",
+  "로고·심볼·폰트 등":                  "",
+  "출자자 관련 서류(정관·주주명부·협약)":"",
+  "PF":                                  "",
+  "기타 차입금":                         "",
+  "자금수지계획(월별/분기별)":           "",
+  "지출결의서 및 증빙":                  "",
+  "예비비 관리":                         "",
+  "재무제표(손익계산서·대차대조표)":     "",
+  "세무 신고서(법인세·부가세·원천세 등)":"",
+  "회계감사 자료":                       "",
+  "토지등의 및 권원확보 관련 서류":      "",
+  "토지매입/등기 관련 서류":             "",
+  "감정평가서":                          "",
+  "토지대장 및 지적도":                  "",
+  "금리/환율 변동 모니터링":             "",
+  "인허가 진행현황 및 보고":             "",
+  "춘천 기업혁신파크 선도사업 건설팀":   "",
+  "춘천 기업혁신파크 통합개발계획":      "",
+  "공정별 계획":                         "",
+  "설계도서":                            "",
+  "시방서·내역서":                       "",
+  "설계VE":                              "",
+  "설계검토자료":                        "",
+  "공정보고서(주간/월간)":               "",
+  "공사사진 및 동영상":                  "",
+  "안전관리(교육·점검일지·사고보고서)":  "",
+  "환경관리(폐기물·오염방지 대책)":      "",
+  "품질관리(품질 시험·검사보고서)":      "",
+  "현장 회의록":                         "",
+  "공사비 예산":                         "",
+  "기성청구 및 지급내역":                "",
+  "준공정산":                            "",
+  "설계변경에 따른 공사비 증감":         "",
+  "준공감사 관련 서류":                  "",
+  "하자보수(계획·이행내역)":             "",
+  "시설물 인수인계":                     "",
+  "자문계약서":                          "",
+  "자문의견서":                          "",
+  "주주간 협약":                         "",
+  "기업혁신파크 협약":                   "",
+  "용역계약":                            "",
+  "기타계약":                            "",
+  "진행현황":                            "",
+  "관련서류":                            "",
+  "내부규정 및 지침 문서":               "",
+  "법인등기부등본":                      "",
+  "사업자등록증":                        "",
+  "정관":                                "",
+  "법인인감증명서/사용인감":             "",
+  "회의자료":                            "",
+  "이사회 의사록":                       "",
+  "주주총회 의사록":                     "",
+  "조직도":                              "",
+  "근로계약":                            "",
+  "비품 및 자산관리":                    "",
+  "사무실 운영":                         "",
+  "정보보안(접근권한·백업 등)":          "",
+  "홍보 및 마케팅 예산":                 "",
+  "예산집행현황":                        "",
+  "보도자료 작성":                       "",
+  "언론 및 미디어 대응":                 "",
+  "PR자료":                              "",
+  "CSR 사회공헌":                        "",
+  "시장조사 및 분석":                    "",
+  "온라인 마케팅":                       "",
+  "오프라인 마케팅":                     "",
+  "분양관리":                            "",
+  "성과분석":                            "",
+  "유관기관 및 단체":                    "",
+  "파트너십":                            "",
+  "보상 민원 예산":                      "",
+  "민원접수 및 처리":                    "",
+  "분쟁조정":                            "",
+  "소송":                                "",
+  "동의 및 권원확보":                    "",
+  "보상공고":                            "",
+  "감정평가":                            "",
+  "손실보상":                            "",
+  "수용재결":                            "",
+  "보상":                                "",
+  "이주대책 대상자 선별":                "",
+  "이주대책 수립":                       "",
+  "주거이전비":                          "",
+  "이주정착금":                          "",
+  "이주단지 조성":                       "",
+  "생활대책 대상자 선별":                "",
+  "생활대책 수립":                       "",
+  "영업손실보상":                        "",
+  "생업대책":                            "",
+};
+
+function getUrl(name) { return FOLDER_URLS[name] || ""; }
+
+// ── 컬럼 정의 ────────────────────────────────────────────────
+const GROUPS = [
+  { key:"G1", label:"사업 총괄 및 기획",  cls:"hg1", acls:"g1",
+    mids:[
+      {key:"M01",label:"사업계획",        subs:["사업타당성","사업계획서","분야별 보고서"]},
+      {key:"M02",label:"일정 및\n공정관리",subs:["공정보고","마스터 일정표","분야별 세부공정표","연락망"]},
+      {key:"M03",label:"보고 및 회의",    subs:["국토교통부 및 국토연구원","지자체(강원·춘천·홍천) 및 유관기관","기타 공공기관","공청회·주민설명회·간담회","내부회의","기타"]},
+      {key:"M04",label:"공문서\n수발신",  subs:["수신공문","발신공문","수신자료","발신자료"]},
+      {key:"M05",label:"공통",            subs:["사내 양식 및 서식","협력업체 리스트","로고·심볼·폰트 등"]},
+    ]},
+  { key:"G2", label:"자산 및 자금관리",   cls:"hg2", acls:"g2",
+    mids:[
+      {key:"M06",label:"자금조달",            subs:["출자자 관련 서류(정관·주주명부·협약)","PF","기타 차입금"]},
+      {key:"M07",label:"자금운용",            subs:["자금수지계획(월별/분기별)","지출결의서 및 증빙","예비비 관리"]},
+      {key:"M08",label:"회계/세무",           subs:["재무제표(손익계산서·대차대조표)","세무 신고서(법인세·부가세·원천세 등)","회계감사 자료"]},
+      {key:"M09",label:"부동산\n자산관리",    subs:["토지등의 및 권원확보 관련 서류","토지매입/등기 관련 서류","감정평가서","토지대장 및 지적도"]},
+      {key:"M10",label:"리스크관리\n(재무)",  subs:["금리/환율 변동 모니터링"]},
+    ]},
+  { key:"G3", label:"건설 및 기술관리",   cls:"hg3", acls:"g3",
+    mids:[
+      {key:"M11",label:"인허가",         subs:["인허가 진행현황 및 보고","춘천 기업혁신파크 선도사업 건설팀","춘천 기업혁신파크 통합개발계획","공정별 계획"]},
+      {key:"M12",label:"설계관리",       subs:["설계도서","시방서·내역서","설계VE","설계검토자료"]},
+      {key:"M13",label:"공사관리",       subs:["공정보고서(주간/월간)","공사사진 및 동영상","안전관리(교육·점검일지·사고보고서)","환경관리(폐기물·오염방지 대책)","품질관리(품질 시험·검사보고서)","현장 회의록"]},
+      {key:"M14",label:"공사비관리",     subs:["공사비 예산","기성청구 및 지급내역","준공정산","설계변경에 따른 공사비 증감"]},
+      {key:"M15",label:"준공 및\n사후처리",subs:["준공감사 관련 서류","하자보수(계획·이행내역)","시설물 인수인계"]},
+    ]},
+  { key:"G4", label:"법무 및 계약관리",   cls:"hg4", acls:"g4",
+    mids:[
+      {key:"M16",label:"법률자문",       subs:["자문계약서","자문의견서"]},
+      {key:"M17",label:"계약관리",       subs:["주주간 협약","기업혁신파크 협약","용역계약","기타계약"]},
+      {key:"M18",label:"소송 및 분쟁",   subs:["진행현황","관련서류"]},
+      {key:"M19",label:"내부규정\n및 지침",subs:["내부규정 및 지침 문서"]},
+    ]},
+  { key:"G5", label:"경영지원 및 총무",   cls:"hg5", acls:"g5",
+    mids:[
+      {key:"M20",label:"법인 기본\n서류",  subs:["법인등기부등본","사업자등록증","정관","법인인감증명서/사용인감"]},
+      {key:"M21",label:"이사회/\n주주총회",subs:["회의자료","이사회 의사록","주주총회 의사록"]},
+      {key:"M22",label:"인사/조직",        subs:["조직도","근로계약"]},
+      {key:"M23",label:"총무",             subs:["비품 및 자산관리","사무실 운영","정보보안(접근권한·백업 등)"]},
+    ]},
+  { key:"G6", label:"홍보 및 마케팅",     cls:"hg6", acls:"g6",
+    mids:[
+      {key:"M24",label:"홍보·마케팅\n비 관리",subs:["홍보 및 마케팅 예산","예산집행현황"]},
+      {key:"M25",label:"홍보",              subs:["보도자료 작성","언론 및 미디어 대응","PR자료","CSR 사회공헌"]},
+      {key:"M26",label:"마케팅",            subs:["시장조사 및 분석","온라인 마케팅","오프라인 마케팅","분양관리","성과분석"]},
+      {key:"M27",label:"대외협력",          subs:["유관기관 및 단체","파트너십","정보보안(접근권한·백업 등)"]},
+    ]},
+  { key:"G7", label:"보상 및 주민협의",   cls:"hg7", acls:"g7",
+    mids:[
+      {key:"M28",label:"보상 민원\n예산 관리",subs:["보상 민원 예산","예산집행현황"]},
+      {key:"M29",label:"민원",              subs:["민원접수 및 처리","분쟁조정","소송"]},
+      {key:"M30",label:"토지보상",          subs:["동의 및 권원확보","보상공고","감정평가","손실보상","수용재결","보상"]},
+      {key:"M31",label:"이주대책",          subs:["이주대책 대상자 선별","이주대책 수립","주거이전비","이주정착금","이주단지 조성"]},
+      {key:"M32",label:"생활대책",          subs:["생활대책 대상자 선별","생활대책 수립","영업손실보상","생업대책"]},
+    ]},
+];
+
+const MID_LABELS = {};
+GROUPS.forEach(g => g.mids.forEach(m => {
+  MID_LABELS[m.key] = { label:m.label.replace('\n',' '), gLabel:g.label, acls:g.acls, subs:m.subs };
+}));
+
+// ── 주요 일정 데이터 ─────────────────────────────────────────
+const ROWS = [
+  {date:"24.03",event:"공모당선",         hl:false, data:{M01:["사업타당성","사업계획서"],M03:["국토교통부 및 국토연구원"],M16:["자문의견서"],M17:["주주간 협약"]}},
+  {date:"24.08",event:"바이오특화단지 선정",hl:false, data:{M01:["분야별 보고서"],M03:["국토교통부 및 국토연구원","지자체(강원·춘천·홍천) 및 유관기관"],M11:["인허가 진행현황 및 보고"]}},
+  {date:"24.08",event:"개발행위허가제한\n지역지정 고시",hl:false, data:{M09:["토지대장 및 지적도"],M11:["인허가 진행현황 및 보고"],M17:["기업혁신파크 협약"]}},
+  {date:"24.12",event:"토지거래허가구역 지정",hl:false, data:{M09:["토지대장 및 지적도","토지등의 및 권원확보 관련 서류"],M16:["자문의견서"],M30:["동의 및 권원확보"]}},
+  {date:"25.01",event:"개발행위허가제한\n지역지정 변경고시",hl:false, data:{M11:["인허가 진행현황 및 보고"],M09:["토지대장 및 지적도"]}},
+  {date:"25.04",event:"AMC 설립",          hl:false, data:{M06:["출자자 관련 서류(정관·주주명부·협약)"],M17:["주주간 협약","용역계앴"],M20:["법인등기부등본","사업자등록증","정관","법인인감증명서/사용인감"],M21:["회의자료","이사회 의사록"],M22:["조직도","근로계약"]}},
+  {date:"25.08",event:"PFV 설립",          hl:false, data:{M06:["출자자 관련 서류(정관·주주명부·협약)","PF"],M17:["주주간 협약"],M20:["법인등기부등본","사업자등록증","정관"],M21:["회의자료","주주총회 의사록"]}},
+  {date:"25.10",event:"공청회 (1차)",      hl:false, data:{M03:["공청회·주민설명회·간담회"],M28:["보상 민원 예산"],M29:["민원접수 및 처리"],M31:["이주대책 대상자 선별","이주대책 수립"],M32:["생활대책 대상자 선별","생활대책 수립"]}},
+  {date:"25.11",event:"통합계획 접수",     hl:false, data:{M01:["사업계획서"],M03:["국토교통부 및 국토연구원","지자체(강원·춘천·홍천) 및 유관기관"],M11:["춘천 기업혁신파크 통합개발계획","인허가 진행현황 및 보고"]}},
+  {date:"26.01",event:"의사변경",          hl:false, data:{M17:["주주간 협약"],M21:["이사회 의사록","주주총회 의사록"]}},
+  {date:"26.05",event:"통합계획 재접수",   hl:false, data:{M03:["국토교통부 및 국토연구원"],M11:["춘천 기업혁신파크 통합개발계획","공정별 계획"]}},
+  {date:"26.06",event:"⭐ AMC 주주변경",  hl:true,  data:{M06:["출자자 관련 서류(정관·주주명부·협약)"],M17:["주주간 협약"],M20:["법인등기부등본","정관"],M21:["이사회 의사록","주주총회 의사록"]}},
+  {date:"26.07",event:"공청회 (2차)",      hl:false, data:{M03:["공청회·주민설명회·간담회"],M29:["민원접수 및 처리","분쟁조정"]}},
+  {date:"26.08",event:"리택 제출",         hl:false, data:{M03:["국토교통부 및 국토연구원"],M11:["인허가 진행현황 및 보고","춘천 기업혁신파크 통합개발계획"]}},
+  {date:"26.12",event:"통합계획 승인\n/ 출자전환",hl:false, data:{M06:["출자자 관련 서류(정관·주주명부·협약)","PF"],M11:["인허가 진행현황 및 보고","춘천 기업혁신파크 통합개발계획"],M17:["기업혁신파크 협약"],M21:["이사회 의사록","주주총회 의사록"]}},
+  {date:"27.01",event:"수용재결 신청",     hl:false, data:{M09:["토지매입/등기 관련 서류","감정평가서"],M16:["자문의견서"],M30:["감정평가","손실보상","수용재결","보상"]}},
+  {date:"27.02",event:"착공신고",          hl:false, data:{M02:["마스터 일정표","분야별 세부공정표"],M11:["인허가 진행현황 및 보고"],M12:["설계도서","시방서·내역서","설계VE"],M14:["공사비 예산"]}},
+  {date:"27.03",event:"PF 기표",           hl:false, data:{M06:["PF"],M07:["자금수지계획(월별/분기별)"],M17:["기타계약"]}},
+  {date:"27~29",event:"시공 진행",         hl:false, data:{M02:["공정보고","분야별 세부공정표"],M13:["공정보고서(주간/월간)","공사사진 및 동영상","안전관리(교육·점검일지·사고보고서)","환경관리(폐기물·오염방지 대책)","품질관리(품질 시험·검사보고서)","현장 회의록"],M14:["기성청구 및 지급내역","설계변경에 따른 공사비 증감"],M26:["온라인 마케팅","오프라인 마케팅","분양관리"],M31:["주거이전비","이주정착금","이주단지 조성"],M32:["영업손실보상","생업대책"]}},
+  {date:"28.01",event:"변전소 착공",       hl:false, data:{M11:["인허가 진행현황 및 보고"],M13:["공정보고서(주간/월간)","공사사진 및 동영상"],M14:["기성청구 및 지급내역"]}},
+  {date:"29~30",event:"준공 (단계별)",     hl:false, data:{M14:["준공정산"],M15:["준공감사 관련 서류","하자보수(계획·이행내역)","시설물 인수인계"],M26:["성과분석"]}},
+];
+
+// ── 테이블 빌드 ──────────────────────────────────────────────
+function build() {
+  const tbl = document.getElementById('tbl');
+  const thead = tbl.createTHead();
+
+  // 헤더 행1: 대분류
+  const hr1 = thead.insertRow();
+  ['기간','주요 일정'].forEach((t,i) => {
+    const th = document.createElement('th');
+    th.rowSpan = 3;
+    th.className = i===0 ? 'hdr-date fix' : 'hdr-event fix2';
+    th.textContent = t;
+    hr1.appendChild(th);
+  });
+  GROUPS.forEach(g => {
+    const th = document.createElement('th');
+    th.colSpan = g.mids.length;
+    th.className = `hdr-l1 ${g.cls}`;
+    th.textContent = g.label;
+    hr1.appendChild(th);
+  });
+
+  // 헤더 행2: 중분류
+  const hr2 = thead.insertRow();
+  GROUPS.forEach(g => g.mids.forEach(m => {
+    const th = document.createElement('th');
+    th.className = `hdr-l2 ${g.cls}`;
+    th.innerHTML = m.label.replace('\n','<br>');
+    hr2.appendChild(th);
+  }));
+
+  // 헤더 행3: 소분류 수
+  const hr3 = thead.insertRow();
+  GROUPS.forEach(g => g.mids.forEach(m => {
+    const th = document.createElement('th');
+    th.className = 'hdr-l3';
+    th.textContent = `소분류 ${m.subs.length}개`;
+    hr3.appendChild(th);
+  }));
+
+  // 데이터 행
+  const tbody = tbl.createTBody();
+  ROWS.forEach(row => {
+    const tr = tbody.insertRow();
+    tr.className = 'data-row' + (row.hl ? ' hl-row' : '');
+
+    const tdD = tr.insertCell(); tdD.className='fix cell-date';
+    tdD.innerHTML = row.date.replace('\n','<br>');
+
+    const tdE = tr.insertCell(); tdE.className='fix2 cell-event';
+    tdE.innerHTML = row.event.replace('\n','<br>');
+    if(row.hl) tdE.style.fontWeight='700';
+
+    GROUPS.forEach(g => g.mids.forEach(m => {
+      const td = tr.insertCell(); td.className='data-cell';
+      const items = row.data[m.key];
+      if(items && items.length > 0) {
+        const blk = document.createElement('div');
+        blk.className = `active-block ${g.acls}`;
+        const hasUrl = items.some(s => getUrl(s) || getUrl(m.label.replace('\n',' ')));
+        blk.innerHTML = `<span>📁</span><span>${items.length}건</span>`;
+        blk.onclick = () => openPopup(row, g, m, items);
+        td.appendChild(blk);
+      } else {
+        const e = document.createElement('div'); e.className='empty-cell';
+        td.appendChild(e);
+      }
+    }));
+  });
+}
+
+// ── 팝업 열기 ────────────────────────────────────────────────
+function openPopup(row, g, m, items) {
+  document.getElementById('popDate').textContent  = `📅 ${row.date}`;
+  document.getElementById('popEvent').textContent = row.event.replace('\n',' ');
+  document.getElementById('popCat').textContent   = `${g.label}  ›  ${m.label.replace('\n',' ')}`;
+
+  // 중분류 폴더 버튼
+  const midUrl = getUrl(m.label.replace('\n',' ')) || getUrl(g.label);
+  const midBtn = document.getElementById('midFolderBtn');
+  if(midUrl) {
+    midBtn.href = midUrl; midBtn.style.opacity='1'; midBtn.style.pointerEvents='auto';
+    midBtn.textContent = '📂 ' + m.label.replace('\n',' ') + ' 폴더 열기';
+  } else {
+    midBtn.href='#'; midBtn.style.opacity='.4'; midBtn.style.pointerEvents='none';
+    midBtn.textContent = '📂 폴더 미설정';
+  }
+
+  // 소분류 목록
+  let html = ''; let hasNoUrl = false;
+  items.forEach(s => {
+    const url = getUrl(s) || midUrl;
+    if(url) {
+      html += `<a class="popup-item" href="${url}" target="_blank" rel="noopener">
+        <span class="item-icon">📄</span>
+        <span class="item-label">${s}</span>
+        <span class="item-link-icon">↗</span>
+      </a>`;
+    } else {
+      hasNoUrl = true;
+      html += `<div class="popup-item no-url">
+        <span class="item-icon">📄</span>
+        <span class="item-label">${s}</span>
+        <span class="item-link-icon gray">🔗</span>
+      </div>`;
+    }
+  });
+  document.getElementById('popBody').innerHTML = html;
+  document.getElementById('noUrlTip').style.display = hasNoUrl ? 'block' : 'none';
+  document.getElementById('overlay').classList.add('open');
+}
+function closePopup() { document.getElementById('overlay').classList.remove('open'); }
+
+build();
+</script>
+</body>
+</html>
