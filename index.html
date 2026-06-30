@@ -860,6 +860,7 @@ function openColGroupPopup(g) {
 }
 
 // ── 테이블 빌드 ───────────────────────────────────────────────
+function rebuild() { build(); }
 function build() {
   const groups = getGroups();
   const rows   = getRows();
@@ -902,4 +903,4 @@ function build() {
 
     if (mi > 0) {
       const bL = document.createElement('button');
-      bL.className='cc-btn'; bL.textContent='◀'; bL.title='�
+      bL.className='cc-btn'; bL
