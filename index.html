@@ -29,41 +29,60 @@ body { font-family:'Malgun Gothic','맑은 고딕',Arial,sans-serif; background:
 .btn-add:hover { background:rgba(255,255,255,.22); }
 
 .wrap { overflow:auto; height:calc(100vh - 46px); }
-
 table { border-collapse:collapse; min-width:max-content; }
 
 thead th { position:sticky; top:0; z-index:20; }
 thead tr:first-child th  { top:0;  z-index:21; }
 thead tr:nth-child(2) th { top:30px; z-index:21; }
-thead tr:nth-child(3) th { top:58px; z-index:21; }
+thead tr:nth-child(3) th { top:60px; z-index:21; }
 
+/* ─── sticky 고정 열 — position:relative 절대 넣지 말 것 ─── */
 th.fix,  td.fix  { position:sticky; left:0;   z-index:15; background:#fff; }
 th.fix2, td.fix2 { position:sticky; left:52px; z-index:15; background:#fff; }
 thead th.fix, thead th.fix2 { z-index:25; background:#1a3460; }
 
+td.fix  { min-width:52px;  border-right:1px solid #ccc; z-index:10; box-shadow:2px 0 4px rgba(0,0,0,.06); }
+td.fix2 { min-width:148px; border-right:2px solid #b0b8cc; z-index:10; box-shadow:2px 0 6px rgba(0,0,0,.08); }
+tr.hl-row td.fix, tr.hl-row td.fix2 { background:#fffbe6; }
+
+/* inner wrapper — position:relative는 여기에만 */
+.ev-wrap { position:relative; padding:6px 10px; min-height:34px; }
+
 .hdr-l1 {
   color:#fff; font-weight:700; font-size:11px;
   text-align:center; padding:5px 6px;
-  border-right:2px solid #fff;
-  border-bottom:1px solid rgba(255,255,255,.3);
-  cursor:pointer; transition:filter .15s;
-  user-select:none;
+  border-right:2px solid #fff; border-bottom:1px solid rgba(255,255,255,.3);
+  cursor:pointer; transition:filter .15s; user-select:none;
 }
 .hdr-l1:hover { filter:brightness(1.25); }
 .hdr-l1 .col-click-hint { font-size:8px; opacity:.6; display:block; margin-top:1px; }
+
 .hdr-l2 {
   color:#fff; font-weight:600; font-size:10px;
-  text-align:center; padding:4px 4px;
+  text-align:center; padding:4px 4px 18px;
   border-right:1px solid rgba(255,255,255,.25);
   border-bottom:1px solid rgba(255,255,255,.3);
   min-width:90px; max-width:110px; line-height:1.3;
-  cursor:pointer; transition:filter .15s;
-  user-select:none;
+  cursor:pointer; user-select:none; position:relative;
 }
-.hdr-l2:hover { filter:brightness(1.25); }
+.hdr-l2:hover { filter:brightness(1.2); }
+
+/* 열 제어 버튼 바 */
+.col-ctrl-bar {
+  display:none; position:absolute; bottom:2px; left:0; right:0;
+  justify-content:center; gap:2px; padding:0 3px;
+}
+.hdr-l2:hover .col-ctrl-bar { display:flex; }
+.cc-btn {
+  background:rgba(255,255,255,.25); border:none; color:#fff;
+  border-radius:3px; padding:1px 4px; font-size:9px;
+  cursor:pointer; line-height:1.5; flex-shrink:0;
+}
+.cc-btn:hover { background:rgba(255,255,255,.65); color:#333; }
+.cc-btn.del:hover { background:#dc3545; color:#fff; }
+
 .hdr-l3 {
-  font-size:9px; font-weight:500;
-  text-align:center; padding:3px 3px;
+  font-size:9px; font-weight:500; text-align:center; padding:3px 3px;
   border-right:1px solid #dde; border-bottom:2px solid #aab;
   color:#333; background:#eef0f5;
   min-width:64px; max-width:80px; line-height:1.3;
@@ -77,34 +96,43 @@ tr.data-row:hover { background:#f0f4ff; }
 tr.data-row.hl-row { background:#fffbe6; }
 tr.data-row.hl-row:hover { background:#fff5cc; }
 
-td.fix  { min-width:52px;  border-right:1px solid #ccc; background:#ffffff; z-index:10; box-shadow:2px 0 4px rgba(0,0,0,.06); }
-td.fix2 { min-width:148px; border-right:2px solid #b0b8cc; background:#ffffff; z-index:10; box-shadow:2px 0 6px rgba(0,0,0,.08); }
-tr.hl-row td.fix, tr.hl-row td.fix2 { background:#fffbe6; }
-
-.cell-date  {
+.cell-date {
   text-align:center; font-size:12px; font-weight:800; color:#0d2245;
-  padding:6px 4px; letter-spacing:0.3px;
-  cursor:pointer; transition:background .12s;
+  padding:6px 4px; letter-spacing:0.3px; cursor:pointer; transition:background .12s;
 }
-.cell-date:hover  { background:#dce8ff!important; }
-.cell-event {
-  font-size:12px; color:#0d1f3c; padding:6px 10px;
-  font-weight:700; line-height:1.45;
-  cursor:pointer; transition:background .12s;
+td.fix:hover { background:#dce8ff!important; cursor:pointer; }
+tr.hl-row td.fix:hover { background:#fff5cc!important; }
+
+.cell-event-text {
+  font-size:12px; color:#0d1f3c; font-weight:700; line-height:1.45;
 }
-.cell-event:hover { background:#dce8ff!important; }
+td.fix2:hover { background:#dce8ff!important; cursor:pointer; }
+td.fix2:hover .row-click-hint { opacity:1; }
+tr.hl-row td.fix2:hover { background:#fff5cc!important; }
 .row-click-hint { font-size:8px; color:#1a73e8; opacity:0; transition:opacity .15s; display:block; margin-top:2px; font-weight:400; }
-.cell-event:hover .row-click-hint, .cell-date:hover .row-click-hint { opacity:1; }
+
+/* 행 제어 버튼 바 */
+.row-ctrl-bar {
+  display:none; position:absolute;
+  top:50%; right:4px; transform:translateY(-50%);
+  gap:2px; align-items:center;
+}
+td.fix2:hover .row-ctrl-bar { display:flex; }
+.rc-btn {
+  background:#e8eaf0; border:none; border-radius:3px;
+  padding:2px 5px; font-size:9px; cursor:pointer; color:#444;
+  line-height:1.4; white-space:nowrap;
+}
+.rc-btn:hover { background:#1a73e8; color:#fff; }
+.rc-btn.del:hover { background:#dc3545; color:#fff; }
 
 td.data-cell { text-align:center; padding:3px; border-right:1px solid #e8eaf0; vertical-align:middle; }
-
 .active-block {
   display:inline-flex; align-items:center; justify-content:center;
   width:100%; min-height:28px; border-radius:4px;
   cursor:pointer; transition:filter .15s, transform .1s;
   font-size:10px; font-weight:700; color:#fff;
-  padding:3px 4px; line-height:1.2; gap:3px;
-  user-select:none;
+  padding:3px 4px; line-height:1.2; gap:3px; user-select:none;
 }
 .active-block:hover { filter:brightness(1.15); transform:scale(1.04); }
 .empty-cell { display:inline-block; width:100%; min-height:28px; border-radius:4px; }
@@ -123,10 +151,8 @@ td.data-cell { text-align:center; padding:3px; border-right:1px solid #e8eaf0; v
 }
 .overlay.open { display:flex; }
 .popup {
-  background:#fff; border-radius:12px;
-  padding:22px; max-width:520px; width:94%;
-  box-shadow:0 12px 40px rgba(0,0,0,.3);
-  max-height:85vh; display:flex; flex-direction:column;
+  background:#fff; border-radius:12px; padding:22px; max-width:520px; width:94%;
+  box-shadow:0 12px 40px rgba(0,0,0,.3); max-height:85vh; display:flex; flex-direction:column;
 }
 .popup-head { border-bottom:2px solid #1a3460; padding-bottom:10px; margin-bottom:12px; }
 .popup-mode-tag {
@@ -140,28 +166,21 @@ td.data-cell { text-align:center; padding:3px; border-right:1px solid #e8eaf0; v
 .popup-event { font-size:14px; font-weight:700; color:#1a3460; }
 .popup-cat   { font-size:11px; color:#666; margin-top:3px; }
 .popup-body  { overflow-y:auto; flex:1; }
-
-/* Row/Col view: grouped sections */
 .popup-section { margin-bottom:10px; }
 .popup-section-title {
   font-size:10px; font-weight:700; color:#555;
   padding:4px 8px; background:#f0f2f5; border-radius:4px;
-  margin-bottom:5px; letter-spacing:0.3px;
-  display:flex; align-items:center; gap:6px;
+  margin-bottom:5px; display:flex; align-items:center; gap:6px;
 }
 .popup-section-badge {
   background:#1a3460; color:#fff; border-radius:10px;
   padding:1px 7px; font-size:9px; font-weight:700;
 }
-
-/* Folder items */
 .popup-item {
   display:flex; align-items:center; gap:8px;
-  padding:7px 10px; border-radius:6px;
-  margin-bottom:4px; border:1px solid #e8eaf0;
-  text-decoration:none; color:#222;
-  transition:background .12s, border-color .12s;
-  cursor:pointer;
+  padding:7px 10px; border-radius:6px; margin-bottom:4px;
+  border:1px solid #e8eaf0; text-decoration:none; color:#222;
+  transition:background .12s, border-color .12s; cursor:pointer;
 }
 .popup-item:hover { background:#e8f0fe; border-color:#1a73e8; }
 .popup-item.no-url { opacity:.55; cursor:default; }
@@ -176,14 +195,12 @@ td.data-cell { text-align:center; padding:3px; border-right:1px solid #e8eaf0; v
   background:#1a73e8; color:#fff; border:none;
   padding:6px 14px; border-radius:6px; cursor:pointer;
   font-size:11px; font-family:inherit;
-  display:flex; align-items:center; gap:5px;
-  text-decoration:none;
+  display:flex; align-items:center; gap:5px; text-decoration:none;
 }
 .btn-mid-link:hover { background:#1558b0; }
 .btn-close {
   background:#f1f3f4; color:#444; border:none;
-  padding:6px 14px; border-radius:6px; cursor:pointer;
-  font-size:11px; font-family:inherit;
+  padding:6px 14px; border-radius:6px; cursor:pointer; font-size:11px; font-family:inherit;
 }
 .btn-close:hover { background:#e0e0e0; }
 .popup-total-badge {
@@ -197,14 +214,12 @@ td.data-cell { text-align:center; padding:3px; border-right:1px solid #e8eaf0; v
   position:fixed; background:#fff;
   border:1px solid #ddd; border-radius:8px;
   box-shadow:0 4px 20px rgba(0,0,0,.2);
-  z-index:600; min-width:160px; padding:5px 0;
-  display:none;
+  z-index:600; min-width:160px; padding:5px 0; display:none;
 }
 .ctx-menu.open { display:block; }
 .ctx-item {
   padding:9px 16px; cursor:pointer; font-size:12px;
-  display:flex; align-items:center; gap:8px; color:#222;
-  transition:background .1s;
+  display:flex; align-items:center; gap:8px; color:#222; transition:background .1s;
 }
 .ctx-item:hover { background:#f0f4ff; }
 .ctx-sep { border:none; border-top:1px solid #eee; margin:4px 0; }
@@ -217,8 +232,7 @@ td.data-cell { text-align:center; padding:3px; border-right:1px solid #e8eaf0; v
 }
 .dlg-overlay.open { display:flex; }
 .dlg {
-  background:#fff; border-radius:12px;
-  padding:24px; max-width:420px; width:92%;
+  background:#fff; border-radius:12px; padding:24px; max-width:420px; width:92%;
   box-shadow:0 12px 40px rgba(0,0,0,.35);
 }
 .dlg h3 { font-size:14px; font-weight:700; color:#1a3460; margin-bottom:14px; }
@@ -237,25 +251,14 @@ td.data-cell { text-align:center; padding:3px; border-right:1px solid #e8eaf0; v
 .dlg-check input[type=checkbox] { width:auto; margin:0; cursor:pointer; }
 .btn-primary {
   background:#1a73e8; color:#fff; border:none;
-  padding:7px 18px; border-radius:6px; cursor:pointer;
-  font-size:12px; font-family:inherit; font-weight:600;
+  padding:7px 18px; border-radius:6px; cursor:pointer; font-size:12px; font-family:inherit; font-weight:600;
 }
 .btn-primary:hover { background:#1558b0; }
 .btn-secondary {
   background:#f1f3f4; color:#444; border:none;
-  padding:7px 14px; border-radius:6px; cursor:pointer;
-  font-size:12px; font-family:inherit;
+  padding:7px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-family:inherit;
 }
 .btn-secondary:hover { background:#e0e0e0; }
-
-/* ── 행 삭제 버튼 ── */
-.row-del-btn {
-  display:none; position:absolute; right:4px; top:50%; transform:translateY(-50%);
-  background:#dc3545; color:#fff; border:none; border-radius:4px;
-  padding:2px 6px; font-size:10px; cursor:pointer; z-index:5;
-}
-td.fix2 { position:relative; }
-td.fix2:hover .row-del-btn { display:block; }
 </style>
 </head>
 <body>
@@ -263,7 +266,7 @@ td.fix2:hover .row-del-btn { display:block; }
 <div class="top-bar">
   <div>
     <h1>🏗️ B-City 공유폴더 매트릭스</h1>
-    <p>헤더 클릭 → 열 전체 보기 &nbsp;|&nbsp; 날짜·일정 클릭 → 행 전체 보기 &nbsp;|&nbsp; 우클릭 → 폴더 추가</p>
+    <p>헤더 클릭 → 열 전체 보기 &nbsp;|&nbsp; 날짜·일정 클릭 → 행 전체 보기 &nbsp;|&nbsp; 셀 우클릭 → 폴더 추가</p>
   </div>
   <div class="top-bar-right">
     <button class="btn btn-add" onclick="showAddRowDlg()">➕ 행 추가</button>
@@ -289,12 +292,10 @@ td.fix2:hover .row-del-btn { display:block; }
     <div id="popTotalBadge"></div>
     <div class="popup-body" id="popBody"></div>
     <p class="no-url-tip" id="noUrlTip" style="display:none">
-      ⚙️ 폴더 URL을 설정하려면 셀 우클릭 → 「폴더 추가」 에서 Google Drive URL을 입력하세요
+      ⚙️ 우클릭 → 「폴더 추가」에서 Google Drive URL 입력
     </p>
     <div class="popup-foot">
-      <a class="btn-mid-link" id="midFolderBtn" href="#" target="_blank" style="display:none">
-        📂 폴더 열기
-      </a>
+      <a class="btn-mid-link" id="midFolderBtn" href="#" target="_blank" style="display:none">📂 폴더 열기</a>
       <button class="btn-close" onclick="closePopup()">닫기</button>
     </div>
   </div>
@@ -308,10 +309,10 @@ td.fix2:hover .row-del-btn { display:block; }
   <div class="ctx-item" id="ctxRemove" style="color:#dc3545">🗑️ 추가 폴더 삭제</div>
 </div>
 
-<!-- ── 행 추가 다이얼로그 ── -->
+<!-- ── 행 추가/수정 다이얼로그 ── -->
 <div class="dlg-overlay" id="addRowDlg">
   <div class="dlg">
-    <h3>➕ 행 추가 — 새 주요 일정</h3>
+    <h3 id="rowDlgTitle">➕ 행 추가 — 새 주요 일정</h3>
     <label>기간 <span style="color:#999;font-weight:400">(예: 27.06)</span></label>
     <input id="newRowDate" placeholder="YY.MM 또는 YY~YY" maxlength="10">
     <label>주요 일정 명칭</label>
@@ -323,15 +324,15 @@ td.fix2:hover .row-del-btn { display:block; }
     </label>
     <div class="dlg-foot">
       <button class="btn-secondary" onclick="closeDlg('addRowDlg')">취소</button>
-      <button class="btn-primary" onclick="saveNewRow()">추가</button>
+      <button class="btn-primary" id="rowSaveBtn" onclick="saveRow()">추가</button>
     </div>
   </div>
 </div>
 
-<!-- ── 열 추가 다이얼로그 ── -->
+<!-- ── 열 추가/수정 다이얼로그 ── -->
 <div class="dlg-overlay" id="addColDlg">
   <div class="dlg">
-    <h3>➕ 열 추가 — 새 중분류</h3>
+    <h3 id="colDlgTitle">➕ 열 추가 — 새 중분류</h3>
     <label>대분류 선택</label>
     <select id="newColGroup"></select>
     <label>중분류 명칭</label>
@@ -340,7 +341,7 @@ td.fix2:hover .row-del-btn { display:block; }
     <textarea id="newColSubs" placeholder="예:&#10;리스크 현황표&#10;대응방안 보고서"></textarea>
     <div class="dlg-foot">
       <button class="btn-secondary" onclick="closeDlg('addColDlg')">취소</button>
-      <button class="btn-primary" onclick="saveNewCol()">추가</button>
+      <button class="btn-primary" id="colSaveBtn" onclick="saveCol()">추가</button>
     </div>
   </div>
 </div>
@@ -355,7 +356,7 @@ td.fix2:hover .row-del-btn { display:block; }
     <input id="newFolderUrl" placeholder="https://drive.google.com/drive/folders/...">
     <p class="dlg-hint">URL 없이 추가하면 나중에 우클릭 → URL 설정으로 입력 가능합니다</p>
     <div class="dlg-foot">
-      <button class="btn-secondary" onclick="closeDlg('addFolderDlg')">취셬</button>
+      <button class="btn-secondary" onclick="closeDlg('addFolderDlg')">취소</button>
       <button class="btn-primary" onclick="saveNewFolder()">추가</button>
     </div>
   </div>
@@ -378,8 +379,7 @@ td.fix2:hover .row-del-btn { display:block; }
 
 <script>
 // ════════════════════════════════════════════════════════════════
-//  ★ Google Drive 폴더 URL 설정
-//  아래 각 항목에 Google Drive 폴더 공유 URL을 붙여넣으세요.
+//  ★ Google Drive 폴더 URL — 아래에 붙여넣으세요
 // ════════════════════════════════════════════════════════════════
 const BASE_FOLDER_URLS = {
   "사업 총괄 및 기획":"","자산 및 자금관리":"","건설 및 기술관리":"",
@@ -398,7 +398,7 @@ const BASE_FOLDER_URLS = {
   "수신공문":"","발신공문":"","수신자료":"","발신자료":"",
   "사내 양식 및 서식":"","협력업체 리스트":"","로고·심볼·폰트 등":"",
   "출자자 관련 서류(정관·주주명부·협약)":"","PF":"","기타 차입금":"",
-  "자금수지계획(월별/분기별)":"","지출결의서 및 증빙":"","예비비 관리":"",
+  "자금수지계획(월별/분기별)":"","지출결의서 및 증빙","예비비 관리":"",
   "재무제표(손익계산서·대차대조표)":"","세무 신고서(법인세·부가세·원천세 등)":"","회계감사 자료":"",
   "토지등의 및 권원확보 관련 서류":"","토지매입/등기 관련 서류":"","감정평가서":"","토지대장 및 지적도":"",
   "금리/환율 변동 모니터링":"","인허가 진행현황 및 보고":"",
@@ -423,36 +423,43 @@ const BASE_FOLDER_URLS = {
   "생활대책 대상자 선별":"","생활대책 수립":"","영업손실보상":"","생업대책":"",
 };
 
-// ── LocalStorage 데이터 관리 ──────────────────────────────────
-const LS_KEYS = {
-  rows: 'bcity_rows',
-  cols: 'bcity_cols',
-  folders: 'bcity_folders',
-  urls: 'bcity_urls',
+// ── LocalStorage 키 ──
+const LS = {
+  rows:'bcity_rows', cols:'bcity_cols', folders:'bcity_folders', urls:'bcity_urls',
+  delRows:'bcity_del_rows', delCols:'bcity_del_cols',
+  editRows:'bcity_edit_rows', editCols:'bcity_edit_cols',
+  rowOrder:'bcity_row_order', colOrder:'bcity_col_order',
 };
 
-let EXTRA_ROWS = [];
-let EXTRA_COLS = [];
-let EXTRA_FOLDERS = {}; // key: "rowId|midKey" → [{name, url}]
-let EXTRA_URLS = {};    // key: folderName → url
+let EXTRA_ROWS = [], EXTRA_COLS = [];
+let EXTRA_FOLDERS = {}, EXTRA_URLS = {};
+let DELETED_ROWS = new Set(), DELETED_COLS = new Set();
+let EDITED_ROWS = {}, EDITED_COLS = {};
+let ROW_ORDER = [], COL_ORDER = {};
 
 function loadLS() {
   try {
-    EXTRA_ROWS    = JSON.parse(localStorage.getItem(LS_KEYS.rows)    || '[]');
-    EXTRA_COLS    = JSON.parse(localStorage.getItem(LS_KEYS.cols)    || '[]');
-    EXTRA_FOLDERS = JSON.parse(localStorage.getItem(LS_KEYS.folders) || '{}');
-    EXTRA_URLS    = JSON.parse(localStorage.getItem(LS_KEYS.urls)    || '{}');
+    EXTRA_ROWS    = JSON.parse(localStorage.getItem(LS.rows)    || '[]');
+    EXTRA_COLS    = JSON.parse(localStorage.getItem(LS.cols)    || '[]');
+    EXTRA_FOLDERS = JSON.parse(localStorage.getItem(LS.folders) || '{}');
+    EXTRA_URLS    = JSON.parse(localStorage.getItem(LS.urls)    || '{}');
+    DELETED_ROWS  = new Set(JSON.parse(localStorage.getItem(LS.delRows) || '[]'));
+    DELETED_COLS  = new Set(JSON.parse(localStorage.getItem(LS.delCols) || '[]'));
+    EDITED_ROWS   = JSON.parse(localStorage.getItem(LS.editRows) || '{}');
+    EDITED_COLS   = JSON.parse(localStorage.getItem(LS.editCols) || '{}');
+    ROW_ORDER     = JSON.parse(localStorage.getItem(LS.rowOrder) || '[]');
+    COL_ORDER     = JSON.parse(localStorage.getItem(LS.colOrder) || '{}');
   } catch(e) {
     EXTRA_ROWS=[]; EXTRA_COLS=[]; EXTRA_FOLDERS={}; EXTRA_URLS={};
+    DELETED_ROWS=new Set(); DELETED_COLS=new Set();
+    EDITED_ROWS={}; EDITED_COLS={}; ROW_ORDER=[]; COL_ORDER={};
   }
 }
 function saveLS(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
 
-function getUrl(name) {
-  return EXTRA_URLS[name] || BASE_FOLDER_URLS[name] || '';
-}
+function getUrl(name) { return EXTRA_URLS[name] || BASE_FOLDER_URLS[name] || ''; }
 
-// ── 기본 컬럼 정의 ──────────────────────────────────────────
+// ── 기본 데이터 ──────────────────────────────────────────────
 const BASE_GROUPS = [
   { key:"G1", label:"사업 총괄 및 기획",  cls:"hg1", acls:"g1",
     mids:[
@@ -515,7 +522,7 @@ const BASE_ROWS = [
   {id:"R03",date:"24.08",event:"개발행위허가제한\n지역지정 고시",hl:false, data:{M09:["토지대장 및 지적도"],M11:["인허가 진행현황 및 보고"],M17:["기업혁신파크 협약"]}},
   {id:"R04",date:"24.12",event:"토지거래허가구역 지정",hl:false, data:{M09:["토지대장 및 지적도","토지등의 및 권원확보 관련 서류"],M16:["자문의견서"],M30:["동의 및 권원확보"]}},
   {id:"R05",date:"25.01",event:"개발행위허가제한\n지역지정 변경고시",hl:false, data:{M11:["인허가 진행현황 및 보고"],M09:["토지대장 및 지적도"]}},
-  {id:"R06",date:"25.04",event:"AMC 설립",         hl:false, data:{M06:["출자자 관련 서류(정관·주주명부·협약)"],M17:["주주간 협약","용역계약"],M20:["법인등기부등본","사업자등록증","정관","법인인감증명서/사용인감"],M21:["회의자료","이사회 의사록"],M22:["조직도","근로계약"]}},
+  {id:"R06",date:"25.04",event:"AMC 설립",         hl:false, data:{M06:["출자자 관련 서류(정관·주주명부·협약)"],M17:["주주간 협앴","용역계약"],M20:["법인등기부등본","사업자등록증","정관","법인인감증명서/사용인감"],M21:["회의자료","이사회 의사록"],M22:["조직도","근로계약"]}},
   {id:"R07",date:"25.08",event:"PFV 설립",         hl:false, data:{M06:["출자자 관련 서류(정관·주주명부·협약)","PF"],M17:["주주간 협약"],M20:["법인등기부등본","사업자등록증","정관"],M21:["회의자료","주주총회 의사록"]}},
   {id:"R08",date:"25.10",event:"공청회 (1차)",     hl:false, data:{M03:["공청회·주민설명회·간담회"],M28:["보상 민원 예산"],M29:["민원접수 및 처리"],M31:["이주대책 대상자 선별","이주대책 수립"],M32:["생활대책 대상자 선별","생활대책 수립"]}},
   {id:"R09",date:"25.11",event:"통합계획 접수",    hl:false, data:{M01:["사업계획서"],M03:["국토교통부 및 국토연구원","지자체(강원·춘천·홍천) 및 유관기관"],M11:["춘천 기업혁신파크 통합개발계획","인허가 진행현황 및 보고"]}},
@@ -533,32 +540,170 @@ const BASE_ROWS = [
   {id:"R21",date:"29~30",event:"준공 (단계별)",    hl:false, data:{M14:["준공정산"],M15:["준공감사 관련 서류","하자보수(계획·이행내역)","시설물 인수인계"],M26:["성과분석"]}},
 ];
 
-// ── 런타임 데이터 병합 ──────────────────────────────────────
+// ── 데이터 병합 ───────────────────────────────────────────────
+function getAllRowIds() {
+  const baseIds  = BASE_ROWS.filter(r => !DELETED_ROWS.has(r.id)).map(r => r.id);
+  const extraIds = EXTRA_ROWS.map(r => r.id);
+  const all = [...baseIds, ...extraIds];
+  if (!ROW_ORDER.length) return all;
+  const existing = new Set(all);
+  const ordered  = ROW_ORDER.filter(id => existing.has(id));
+  const rest     = all.filter(id => !ordered.includes(id));
+  return [...ordered, ...rest];
+}
+
+function getRows() {
+  const map = {};
+  BASE_ROWS.forEach(r => {
+    if (DELETED_ROWS.has(r.id)) return;
+    const ed = EDITED_ROWS[r.id];
+    map[r.id] = ed ? {...r, ...ed} : {...r};
+  });
+  EXTRA_ROWS.forEach(r => {
+    const ed = EDITED_ROWS[r.id];
+    map[r.id] = ed ? {...r, ...ed, _extra:true} : {...r, _extra:true};
+  });
+  return getAllRowIds().filter(id => map[id]).map(id => map[id]);
+}
+
 function getGroups() {
-  const base = BASE_GROUPS.map(g => ({...g, mids:[...g.mids]}));
+  const base = BASE_GROUPS.map(g => ({
+    ...g,
+    mids: g.mids
+      .filter(m => !DELETED_COLS.has(m.key))
+      .map(m => { const ed = EDITED_COLS[m.key]; return ed ? {...m, ...ed} : {...m}; })
+  }));
   EXTRA_COLS.forEach(c => {
+    if (DELETED_COLS.has(c.key)) return;
     const grp = base.find(g => g.key === c.groupKey);
-    if(grp) grp.mids.push({key:c.key, label:c.label, subs:c.subs||[]});
+    if (grp) {
+      const ed = EDITED_COLS[c.key];
+      grp.mids.push(ed ? {...c, ...ed} : {...c});
+    }
+  });
+  // apply column ordering
+  base.forEach(g => {
+    const order = COL_ORDER[g.key];
+    if (order && order.length) {
+      const midMap = {};
+      g.mids.forEach(m => midMap[m.key] = m);
+      const ordered = order.filter(k => midMap[k]).map(k => midMap[k]);
+      const rest    = g.mids.filter(m => !order.includes(m.key));
+      g.mids = [...ordered, ...rest];
+    }
   });
   return base;
 }
-function getRows() {
-  const base = BASE_ROWS.map(r => ({...r, data:{...r.data}}));
-  EXTRA_ROWS.forEach(r => base.push(r));
-  return base;
-}
+
 function getCellItems(row, midKey) {
-  const base = (row.data[midKey] || []);
-  const extra = (EXTRA_FOLDERS[`${row.id}|${midKey}`] || []).map(f => f.name);
-  return [...base, ...extra];
+  return [...(row.data[midKey] || []),
+          ...(EXTRA_FOLDERS[`${row.id}|${midKey}`] || []).map(f => f.name)];
 }
 function getCellItemsFull(row, midKey) {
-  const base = (row.data[midKey] || []).map(name => ({ name, url: getUrl(name), isExtra:false }));
+  const base  = (row.data[midKey] || []).map(name => ({ name, url:getUrl(name), isExtra:false }));
   const extra = (EXTRA_FOLDERS[`${row.id}|${midKey}`] || []).map(f => ({ name:f.name, url:f.url||getUrl(f.name), isExtra:true }));
   return [...base, ...extra];
 }
 
-// ── 컨텍스트 메뉴 상태 ──────────────────────────────────────
+// ── 순서 이동 ─────────────────────────────────────────────────
+function moveRow(id, dir) {
+  const order = getAllRowIds();
+  const idx = order.indexOf(id);
+  if (idx < 0) return;
+  const ni = idx + dir;
+  if (ni < 0 || ni >= order.length) return;
+  [order[idx], order[ni]] = [order[ni], order[idx]];
+  ROW_ORDER = order;
+  saveLS(LS.rowOrder, ROW_ORDER);
+  rebuild();
+}
+
+function moveCol(groupKey, key, dir) {
+  const groups = getGroups();
+  const g = groups.find(g => g.key === groupKey);
+  if (!g) return;
+  const keys = g.mids.map(m => m.key);
+  const idx = keys.indexOf(key);
+  if (idx < 0) return;
+  const ni = idx + dir;
+  if (ni < 0 || ni >= keys.length) return;
+  [keys[idx], keys[ni]] = [keys[ni], keys[idx]];
+  COL_ORDER[groupKey] = keys;
+  saveLS(LS.colOrder, COL_ORDER);
+  rebuild();
+}
+
+// ── 행 삭제 ───────────────────────────────────────────────────
+function deleteRow(id, isExtra) {
+  if (!confirm('이 행을 삭제할까요?')) return;
+  if (isExtra) {
+    EXTRA_ROWS = EXTRA_ROWS.filter(r => r.id !== id);
+    saveLS(LS.rows, EXTRA_ROWS);
+    ROW_ORDER = ROW_ORDER.filter(x => x !== id);
+    saveLS(LS.rowOrder, ROW_ORDER);
+  } else {
+    DELETED_ROWS.add(id);
+    saveLS(LS.delRows, [...DELETED_ROWS]);
+    ROW_ORDER = ROW_ORDER.filter(x => x !== id);
+    saveLS(LS.rowOrder, ROW_ORDER);
+  }
+  rebuild();
+}
+
+// ── 열 삭제 ───────────────────────────────────────────────────
+function deleteCol(groupKey, key, isExtra) {
+  if (!confirm('이 열을 숨길까요?')) return;
+  if (isExtra) {
+    EXTRA_COLS = EXTRA_COLS.filter(c => c.key !== key);
+    saveLS(LS.cols, EXTRA_COLS);
+    if (COL_ORDER[groupKey]) {
+      COL_ORDER[groupKey] = COL_ORDER[groupKey].filter(k => k !== key);
+      saveLS(LS.colOrder, COL_ORDER);
+    }
+  } else {
+    DELETED_COLS.add(key);
+    saveLS(LS.delCols, [...DELETED_COLS]);
+    if (COL_ORDER[groupKey]) {
+      COL_ORDER[groupKey] = COL_ORDER[groupKey].filter(k => k !== key);
+      saveLS(LS.colOrder, COL_ORDER);
+    }
+  }
+  rebuild();
+}
+
+// ── 행 수정 ───────────────────────────────────────────────────
+let editingRowId = null;
+function showEditRowDlg(id) {
+  editingRowId = id;
+  const all = [...BASE_ROWS, ...EXTRA_ROWS];
+  const r = all.find(x => x.id === id);
+  const eff = {...r, ...(EDITED_ROWS[id] || {})};
+  document.getElementById('rowDlgTitle').textContent = '✎ 행 수정';
+  document.getElementById('newRowDate').value  = eff.date || '';
+  document.getElementById('newRowEvent').value = eff.event || '';
+  document.getElementById('newRowHl').checked  = !!eff.hl;
+  document.getElementById('rowSaveBtn').textContent = '수정';
+  document.getElementById('addRowDlg').classList.add('open');
+}
+
+// ── 열 수정 ───────────────────────────────────────────────────
+let editingColKey = null;
+function showEditColDlg(key, groupKey) {
+  editingColKey = key;
+  const allMids = BASE_GROUPS.flatMap(g => g.mids).concat(EXTRA_COLS);
+  const m = allMids.find(x => x.key === key);
+  const eff = {...m, ...(EDITED_COLS[key] || {})};
+  const groups = getGroups();
+  const sel = document.getElementById('newColGroup');
+  sel.innerHTML = groups.map(g => `<option value="${g.key}"${g.key===groupKey?' selected':''}>${esc(g.label)}</option>`).join('');
+  document.getElementById('colDlgTitle').textContent = '✎ 열 수정';
+  document.getElementById('newColLabel').value = eff.label || '';
+  document.getElementById('newColSubs').value  = (eff.subs || []).join('\n');
+  document.getElementById('colSaveBtn').textContent = '수정';
+  document.getElementById('addColDlg').classList.add('open');
+}
+
+// ── 컨텍스트 메뉴 ─────────────────────────────────────────────
 let ctxRowId = null, ctxMidKey = null, ctxMidLabel = null, ctxGLabel = null;
 
 function showCtxMenu(e, rowId, midKey, midLabel, gLabel) {
@@ -574,51 +719,36 @@ function hideCtxMenu() { document.getElementById('ctxMenu').classList.remove('op
 document.addEventListener('click', hideCtxMenu);
 document.addEventListener('keydown', e => { if(e.key==='Escape'){ hideCtxMenu(); closePopup(); closeDlg(); } });
 
-document.getElementById('ctxAddFolder').onclick = () => {
-  hideCtxMenu();
-  showAddFolderDlg();
-};
-document.getElementById('ctxSetUrl').onclick = () => {
-  hideCtxMenu();
-  showSetUrlDlg(ctxMidLabel || ctxGLabel || '');
-};
-document.getElementById('ctxRemove').onclick = () => {
+document.getElementById('ctxAddFolder').onclick = () => { hideCtxMenu(); showAddFolderDlg(); };
+document.getElementById('ctxSetUrl').onclick    = () => { hideCtxMenu(); showSetUrlDlg(ctxMidLabel || ctxGLabel || ''); };
+document.getElementById('ctxRemove').onclick    = () => {
   hideCtxMenu();
   if(!ctxRowId || !ctxMidKey) return;
   const key = `${ctxRowId}|${ctxMidKey}`;
   if(EXTRA_FOLDERS[key]) {
     if(confirm(`"${ctxMidLabel}" 칸의 추가 폴더를 모두 삭제할까요?`)) {
       delete EXTRA_FOLDERS[key];
-      saveLS(LS_KEYS.folders, EXTRA_FOLDERS);
+      saveLS(LS.folders, EXTRA_FOLDERS);
       rebuild();
     }
-  } else {
-    alert('추가된 폴더가 없습니다.');
-  }
+  } else { alert('추가된 폴더가 없습니다.'); }
 };
 
-// ── 팝업 ────────────────────────────────────────────────────
+// ── 팝업 ─────────────────────────────────────────────────────
 function closePopup() { document.getElementById('overlay').classList.remove('open'); }
-
 function _openPopup() { document.getElementById('overlay').classList.add('open'); }
 
 function renderFolderItem(name, url) {
   if(url) {
     return `<a class="popup-item" href="${url}" target="_blank" rel="noopener">
-      <span class="item-icon">📁</span>
-      <span class="item-label">${esc(name)}</span>
-      <span class="item-link-icon">↗</span>
-    </a>`;
-  } else {
-    return `<div class="popup-item no-url">
-      <span class="item-icon">📁</span>
-      <span class="item-label">${esc(name)}</span>
-      <span class="item-link-icon gray">🔗</span>
-    </div>`;
+      <span class="item-icon">📁</span><span class="item-label">${esc(name)}</span>
+      <span class="item-link-icon">↗</span></a>`;
   }
+  return `<div class="popup-item no-url">
+    <span class="item-icon">📁</span><span class="item-label">${esc(name)}</span>
+    <span class="item-link-icon gray">🔗</span></div>`;
 }
 
-// 셀 교집합 팝업
 function openCellPopup(row, g, m) {
   const items = getCellItemsFull(row, m.key);
   document.getElementById('popMode').className  = 'popup-mode-tag mode-cell';
@@ -627,28 +757,20 @@ function openCellPopup(row, g, m) {
   document.getElementById('popEvent').textContent = row.event.replace('\n',' ');
   document.getElementById('popCat').textContent   = `${g.label}  ›  ${m.label.replace('\n',' ')}`;
   document.getElementById('popTotalBadge').innerHTML = `<div class="popup-total-badge">📁 ${items.length}개 폴더</div>`;
-
   const midUrl = getUrl(m.label.replace('\n',' ')) || getUrl(g.label);
   const midBtn = document.getElementById('midFolderBtn');
   if(midUrl) {
     midBtn.href = midUrl; midBtn.style.opacity='1'; midBtn.style.pointerEvents='auto';
     midBtn.textContent = '📂 ' + m.label.replace('\n',' ') + ' 폴더 열기';
     midBtn.style.display='flex';
-  } else {
-    midBtn.style.display='none';
-  }
-
+  } else { midBtn.style.display='none'; }
   let html=''; let hasNoUrl=false;
-  items.forEach(({name,url}) => {
-    if(!url) hasNoUrl=true;
-    html += renderFolderItem(name, url);
-  });
+  items.forEach(({name,url}) => { if(!url) hasNoUrl=true; html += renderFolderItem(name,url); });
   document.getElementById('popBody').innerHTML = html || '<p style="color:#aaa;font-size:11px;text-align:center;padding:16px">폴더 없음</p>';
   document.getElementById('noUrlTip').style.display = hasNoUrl ? 'block' : 'none';
   _openPopup();
 }
 
-// 행 전체 팝업
 function openRowPopup(row) {
   const groups = getGroups();
   document.getElementById('popMode').className  = 'popup-mode-tag mode-row';
@@ -658,16 +780,14 @@ function openRowPopup(row) {
   document.getElementById('popCat').textContent   = '이 일정의 모든 폴더';
   document.getElementById('midFolderBtn').style.display='none';
   document.getElementById('noUrlTip').style.display='none';
-
   let html=''; let total=0;
   groups.forEach(g => {
-    const midsWithItems = g.mids.filter(m => getCellItems(row, m.key).length > 0);
-    if(!midsWithItems.length) return;
+    const midsW = g.mids.filter(m => getCellItems(row, m.key).length > 0);
+    if(!midsW.length) return;
     html += `<div class="popup-section">
       <div class="popup-section-title" style="color:#fff;background:var(--gc,#1a3460)">
-        ${esc(g.label)} <span class="popup-section-badge">${midsWithItems.length}개 중분류</span>
-      </div>`;
-    midsWithItems.forEach(m => {
+        ${esc(g.label)} <span class="popup-section-badge">${midsW.length}개 중분류</span></div>`;
+    midsW.forEach(m => {
       const items = getCellItemsFull(row, m.key);
       total += items.length;
       html += `<div style="margin-left:8px;margin-bottom:8px">
@@ -682,7 +802,6 @@ function openRowPopup(row) {
   _openPopup();
 }
 
-// 열 전체 팝업 (중분류)
 function openColMidPopup(g, m) {
   const rows = getRows();
   document.getElementById('popMode').className  = 'popup-mode-tag mode-col';
@@ -692,17 +811,14 @@ function openColMidPopup(g, m) {
   document.getElementById('popCat').textContent   = `소분류 ${m.subs.length}개`;
   document.getElementById('midFolderBtn').style.display='none';
   document.getElementById('noUrlTip').style.display='none';
-
   let html=''; let total=0;
   rows.forEach(row => {
     const items = getCellItemsFull(row, m.key);
     if(!items.length) return;
     total += items.length;
     html += `<div class="popup-section">
-      <div class="popup-section-title">
-        📅 ${esc(row.date)} · ${esc(row.event.replace('\n',' '))}
-        <span class="popup-section-badge">${items.length}건</span>
-      </div>`;
+      <div class="popup-section-title">📅 ${esc(row.date)} · ${esc(row.event.replace('\n',' '))}
+        <span class="popup-section-badge">${items.length}건</span></div>`;
     items.forEach(({name,url}) => { html += renderFolderItem(name,url); });
     html += '</div>';
   });
@@ -711,7 +827,6 @@ function openColMidPopup(g, m) {
   _openPopup();
 }
 
-// 열 전체 팝업 (대분류)
 function openColGroupPopup(g) {
   const rows = getRows();
   document.getElementById('popMode').className  = 'popup-mode-tag mode-col';
@@ -721,26 +836,21 @@ function openColGroupPopup(g) {
   document.getElementById('popCat').textContent   = `중분류 ${g.mids.length}개`;
   document.getElementById('midFolderBtn').style.display='none';
   document.getElementById('noUrlTip').style.display='none';
-
   let html=''; let total=0;
   rows.forEach(row => {
     const rowItems = [];
     g.mids.forEach(m => {
-      const items = getCellItemsFull(row, m.key);
-      items.forEach(it => rowItems.push({...it, midLabel:m.label.replace('\n',' ')}));
+      getCellItemsFull(row, m.key).forEach(it => rowItems.push({...it, midLabel:m.label.replace('\n',' ')}));
     });
     if(!rowItems.length) return;
     total += rowItems.length;
     html += `<div class="popup-section">
-      <div class="popup-section-title">
-        📅 ${esc(row.date)} · ${esc(row.event.replace('\n',' '))}
-        <span class="popup-section-badge">${rowItems.length}건</span>
-      </div>`;
+      <div class="popup-section-title">📅 ${esc(row.date)} · ${esc(row.event.replace('\n',' '))}
+        <span class="popup-section-badge">${rowItems.length}건</span></div>`;
     rowItems.forEach(({name,url,midLabel}) => {
       html += `<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">
         <span style="font-size:9px;color:#999;min-width:80px;flex-shrink:0">${esc(midLabel)}</span>
-        ${renderFolderItem(name,url)}
-      </div>`;
+        ${renderFolderItem(name,url)}</div>`;
     });
     html += '</div>';
   });
@@ -749,13 +859,13 @@ function openColGroupPopup(g) {
   _openPopup();
 }
 
-// ── 테이블 빌드 ──────────────────────────────────────────────
+// ── 테이블 빌드 ───────────────────────────────────────────────
 function build() {
   const groups = getGroups();
   const rows   = getRows();
   const tbl    = document.getElementById('tbl');
   tbl.innerHTML = '';
-  const thead  = tbl.createTHead();
+  const thead = tbl.createTHead();
 
   // 헤더 행1: 대분류
   const hr1 = thead.insertRow();
@@ -768,7 +878,7 @@ function build() {
   });
   groups.forEach(g => {
     const th = document.createElement('th');
-    th.colSpan = g.mids.length;
+    th.colSpan = g.mids.length || 1;
     th.className = `hdr-l1 ${g.cls}`;
     th.innerHTML = `${esc(g.label)}<span class="col-click-hint">▼ 전체보기</span>`;
     th.title = `클릭: "${g.label}" 전체 폴더 보기`;
@@ -778,185 +888,18 @@ function build() {
 
   // 헤더 행2: 중분류
   const hr2 = thead.insertRow();
-  groups.forEach(g => g.mids.forEach(m => {
+  groups.forEach(g => g.mids.forEach((m, mi) => {
     const th = document.createElement('th');
     th.className = `hdr-l2 ${g.cls}`;
     th.innerHTML = m.label.replace('\n','<br>');
-    th.title = `클릭: "${m.label.replace('\n',' ')}" 전체 폴더 보기`;
+    th.title = `클릭: "${m.label.replace('\n',' ')}" 전체 보기`;
     th.onclick = () => openColMidPopup(g, m);
-    hr2.appendChild(th);
-  }));
 
-  // 헤더 행3: 소분류 수
-  const hr3 = thead.insertRow();
-  groups.forEach(g => g.mids.forEach(m => {
-    const th = document.createElement('th');
-    th.className = 'hdr-l3';
-    th.textContent = `소분류 ${m.subs.length}개`;
-    hr3.appendChild(th);
-  }));
+    // 열 제어 버튼
+    const bar = document.createElement('div');
+    bar.className = 'col-ctrl-bar';
+    bar.onclick = e => e.stopPropagation();
 
-  // 데이터 행
-  const tbody = tbl.createTBody();
-  rows.forEach((row, ri) => {
-    const tr = tbody.insertRow();
-    tr.className = 'data-row' + (row.hl ? ' hl-row' : '');
-
-    const tdD = tr.insertCell();
-    tdD.className = 'fix cell-date';
-    tdD.innerHTML = esc(row.date).replace('\n','<br>') + '<span class="row-click-hint">▶ 전체보기</span>';
-    tdD.title = '클릭: 이 행 전체 폴더 보기';
-    tdD.onclick = () => openRowPopup(row);
-
-    const tdE = tr.insertCell();
-    tdE.className = 'fix2 cell-event';
-    tdE.innerHTML = esc(row.event).replace('\n','<br>') + '<span class="row-click-hint">▶ 전체보기</span>';
-    if(row.hl) tdE.style.fontWeight='700';
-    tdE.title = '클릭: 이 행 전체 폴더 보기';
-    tdE.onclick = () => openRowPopup(row);
-
-    // 삭제 버튼 (추가된 행에만)
-    if(row._extra) {
-      const delBtn = document.createElement('button');
-      delBtn.className = 'row-del-btn';
-      delBtn.textContent = '✕ 삭제';
-      delBtn.onclick = e => { e.stopPropagation(); deleteExtraRow(row.id); };
-      tdE.appendChild(delBtn);
-    }
-
-    groups.forEach(g => g.mids.forEach(m => {
-      const td = tr.insertCell();
-      td.className = 'data-cell';
-      const items = getCellItems(row, m.key);
-      if(items.length > 0) {
-        const blk = document.createElement('div');
-        blk.className = `active-block ${g.acls}`;
-        blk.innerHTML = `<span>📁</span><span>${items.length}건</span>`;
-        blk.title = items.join(', ');
-        blk.onclick = () => openCellPopup(row, g, m);
-        blk.oncontextmenu = e => showCtxMenu(e, row.id, m.key, m.label.replace('\n',' '), g.label);
-        td.appendChild(blk);
-      } else {
-        const emp = document.createElement('div');
-        emp.className = 'empty-cell';
-        emp.title = '우클릭: 폴더 추가';
-        emp.oncontextmenu = e => showCtxMenu(e, row.id, m.key, m.label.replace('\n',' '), g.label);
-        td.appendChild(emp);
-      }
-    }));
-  });
-}
-
-function rebuild() { build(); }
-
-// ── 다이얼로그 ──────────────────────────────────────────────
-function closeDlg(id) {
-  if(id) document.getElementById(id).classList.remove('open');
-  else document.querySelectorAll('.dlg-overlay').forEach(el => el.classList.remove('open'));
-}
-
-// 행 추가
-function showAddRowDlg() {
-  document.getElementById('newRowDate').value = '';
-  document.getElementById('newRowEvent').value = '';
-  document.getElementById('newRowHl').checked = false;
-  document.getElementById('addRowDlg').classList.add('open');
-}
-function saveNewRow() {
-  const date  = document.getElementById('newRowDate').value.trim();
-  const event = document.getElementById('newRowEvent').value.trim();
-  if(!date || !event) { alert('기간과 주요 일정을 입력하세요.'); return; }
-  const id = 'EX_' + Date.now();
-  const hl = document.getElementById('newRowHl').checked;
-  EXTRA_ROWS.push({id, date, event, hl, data:{}, _extra:true});
-  saveLS(LS_KEYS.rows, EXTRA_ROWS);
-  closeDlg('addRowDlg');
-  rebuild();
-}
-
-// 열 추가
-function showAddColDlg() {
-  const groups = getGroups();
-  const sel = document.getElementById('newColGroup');
-  sel.innerHTML = groups.map(g => `<option value="${g.key}">${esc(g.label)}</option>`).join('');
-  document.getElementById('newColLabel').value = '';
-  document.getElementById('newColSubs').value = '';
-  document.getElementById('addColDlg').classList.add('open');
-}
-function saveNewCol() {
-  const groupKey = document.getElementById('newColGroup').value;
-  const label    = document.getElementById('newColLabel').value.trim();
-  const subsText = document.getElementById('newColSubs').value.trim();
-  if(!label) { alert('중분류 명칭을 입력하세요.'); return; }
-  const subs = subsText ? subsText.split('\n').map(s=>s.trim()).filter(Boolean) : [];
-  const key  = 'EC_' + Date.now();
-  EXTRA_COLS.push({key, groupKey, label, subs});
-  saveLS(LS_KEYS.cols, EXTRA_COLS);
-  closeDlg('addColDlg');
-  rebuild();
-}
-
-// 폴더 추가
-function showAddFolderDlg() {
-  document.getElementById('newFolderName').value = '';
-  document.getElementById('newFolderUrl').value  = '';
-  document.getElementById('addFolderDlg').classList.add('open');
-}
-function saveNewFolder() {
-  const name = document.getElementById('newFolderName').value.trim();
-  const url  = document.getElementById('newFolderUrl').value.trim();
-  if(!name) { alert('폴더 이름을 입력하세요.'); return; }
-  if(!ctxRowId || !ctxMidKey) { closeDlg('addFolderDlg'); return; }
-  const key = `${ctxRowId}|${ctxMidKey}`;
-  if(!EXTRA_FOLDERS[key]) EXTRA_FOLDERS[key] = [];
-  EXTRA_FOLDERS[key].push({name, url});
-  if(url) { EXTRA_URLS[name] = url; saveLS(LS_KEYS.urls, EXTRA_URLS); }
-  saveLS(LS_KEYS.folders, EXTRA_FOLDERS);
-  closeDlg('addFolderDlg');
-  rebuild();
-}
-
-// URL 설정
-let urlTargetName = '';
-function showSetUrlDlg(name) {
-  urlTargetName = name;
-  document.getElementById('setUrlLabel').textContent = `"${name}" 폴더 URL`;
-  document.getElementById('setUrlName').value  = name;
-  document.getElementById('setUrlValue').value = getUrl(name) || '';
-  document.getElementById('setUrlDlg').classList.add('open');
-}
-function saveUrl() {
-  const url = document.getElementById('setUrlValue').value.trim();
-  const name = urlTargetName;
-  if(name) { EXTRA_URLS[name] = url; saveLS(LS_KEYS.urls, EXTRA_URLS); }
-  closeDlg('setUrlDlg');
-  rebuild();
-}
-
-// 추가된 행 삭제
-function deleteExtraRow(id) {
-  if(!confirm('이 행을 삭제할까요?')) return;
-  EXTRA_ROWS = EXTRA_ROWS.filter(r => r.id !== id);
-  saveLS(LS_KEYS.rows, EXTRA_ROWS);
-  rebuild();
-}
-
-// 전체 초기화
-function resetAll() {
-  if(!confirm('사용자가 추가한 행, 열, 폴더, URL을 모두 초기화할까요?\n(기본 데이터는 유지됩니다)')) return;
-  EXTRA_ROWS=[]; EXTRA_COLS=[]; EXTRA_FOLDERS={}; EXTRA_URLS={};
-  [LS_KEYS.rows, LS_KEYS.cols, LS_KEYS.folders, LS_KEYS.urls].forEach(k => localStorage.removeItem(k));
-  rebuild();
-}
-
-// XSS 방지
-function esc(str) {
-  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── 초기화 ──────────────────────────────────────────────────
-loadLS();
-build();
-</script>
-</body>
-</html>
+    if (mi > 0) {
+      const bL = document.createElement('button');
+      bL.className='cc-btn'; bL.textContent='◀'; bL.title='�
